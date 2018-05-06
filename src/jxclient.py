@@ -4,7 +4,7 @@ from modules.transfer import *
 from modules.utility import printLog
 
 
-import ConfigParser, io, sys, getopt, pickle, socket, signal
+import ConfigParser, io, os, sys, getopt, pickle, socket, signal
 from pprint import pprint
 
 def usage():
@@ -71,7 +71,7 @@ def main(argv):
     finally:
         soc.close()
         print('Exiting client program')
-        sys.exit()
+        os._exit(1)
 
 
 
