@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 
-from modules.transfer import *
-from modules.utility import printLog
-
-
 import ConfigParser, io, os, sys, getopt, pickle, socket, signal
 from pprint import pprint
+
+# Registering main root path for sane building!
+sys.path.append(os.path.dirname(__file__))
+
+from modules.transfer import *
+from modules.utility import printLog
 
 def usage():
     print 'client.py -a <refresh|get_gpu|get_fans> -f <json|line>'
 
-def main(argv):
+def main():
     action = ''
     format = ''
+    # Setup tools dont allow argument
+    argv = sys.argv[1:]
 
     try:
         opts, args = getopt.getopt(argv,"hi:a:f:",["--action=","--format="])
@@ -84,4 +88,4 @@ def monitor(t):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
