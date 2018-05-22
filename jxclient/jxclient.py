@@ -10,16 +10,26 @@ from modules.transfer import *
 from modules.utility import printLog
 
 def usage():
-    print 'client.py -a <refresh|get_gpu|get_fans> -f <json|line>'
+    print 'jxclient.py -a|-h'
+    print '   -a <action>'
+    print '      monitor:miner:cpu          Retrieving CPU miner log entry'
+    print '      monitor:miner:gpu:x        Retrieving CPU miner x (0|1) log entry'
+    print '      monitor:server             Retrieving Full server logs in json format'
+    print '      server:status              Checking server status'
+    print '      server:shutdown            Shuts down the server'
+    print '      server:reboot              Rebooting server instance'
+    print '      server:update              Updating server loaded configuration'
+    print '   -h Prints this help message'
 
 def main():
     action = ''
     format = ''
+
     # Setup tools dont allow argument
     argv = sys.argv[1:]
 
     try:
-        opts, args = getopt.getopt(argv,"hi:a:f:",["--action=","--format="])
+        opts, args = getopt.getopt(argv,"hi:a:",["--action="])
 
     except getopt.GetoptError:
         usage()
@@ -33,10 +43,18 @@ def main():
         elif opt in ("-a", "--action"):
             action = arg
 
-        elif opt in ("-f", "--format"):
-            format = arg
+    validActions = [
+        'monitor:miner:cpu',
+        'monitor:miner:gpu:0',
+        'monitor:miner:gpu:1',
+        'monitor:server',
+        'server:status',
+        'server:shutdown',
+        'server:reboot',
+        'server:update'
+    ]
 
-    if not action:
+    if not action or action not in validActions:
         usage()
         sys.exit(2)
 
@@ -46,6 +64,7 @@ def main():
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         soc.connect((host, port))
         printLog('Connected to --#%s#-:--#%s#-' % (host, port))
+
     except:
         printLog("Connection error")
         sys.exit()
@@ -55,26 +74,16 @@ def main():
         t.send(action)
         printLog('Sending --#%s#- action' % (action))
 
-        if action in ('gpuInfo', 'fansInfo'):
-            data = t.recv()
-            printLog('Receiving data')
-            data_variable = pickle.loads(data);
-
-        elif 'monitor' in action:
+        if 'monitor' in action:
             monitor(t)
-
-        elif action in ('cpuMiningInfo', 'gpuMiningInfo'):
-            pass
-
 
     except:
         printLog('Closing --#%s#- action' % (action))
-        t.send('close')
-        t.wait()
 
     finally:
+        t.send('close')
         soc.close()
-        print('Exiting client program')
+        printLog('Exiting client program', 'success')
         os._exit(1)
 
 
