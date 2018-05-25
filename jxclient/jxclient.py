@@ -10,7 +10,7 @@ from modules.transfer import *
 from modules.utility import printLog
 
 def usage():
-    print 'jxclient.py -a|-h'
+    print 'jxclient -a|-h|-s|-p|-v'
     print '   -a <action>'
     print '      monitor:miner:cpu          Retrieving CPU miner log entry'
     print '      monitor:miner:gpu:x        Retrieving CPU miner x (0|1) log entry'
@@ -19,17 +19,32 @@ def usage():
     print '      server:shutdown            Shuts down the server'
     print '      server:reboot              Rebooting server instance'
     print '      server:update              Updating server loaded configuration'
+    print '   -s Insert the server host ip address, default to 127.0.0.1'
+    print '   -v Insert the server port number, default is 8129'
     print '   -h Prints this help message'
+    print '   -v Prints version'
+
+def version():
+    print '0.3.1'
 
 def main():
+    global t
+    global soc
+
     action = ''
-    format = ''
+    host = '127.0.0.1'
+    port = 8129
+    t = None
+    soc = None
+
+    signal.signal(signal.SIGINT, shutdown)
+    signal.signal(signal.SIGTERM, shutdown)
 
     # Setup tools dont allow argument
     argv = sys.argv[1:]
 
     try:
-        opts, args = getopt.getopt(argv,"hi:a:",["--action="])
+        opts, args = getopt.getopt(argv,"hi:vi:s:p:a:",["--action="])
 
     except getopt.GetoptError:
         usage()
@@ -40,7 +55,18 @@ def main():
             usage()
             sys.exit()
 
-        elif opt in ("-a", "--action"):
+        if opt == '-v':
+            version()
+            sys.exit()
+
+        if opt == '-s':
+            print arg
+            host = str(arg)
+
+        if opt == '-p':
+            port = int(arg)
+
+        if opt in ("-a", "--action"):
             action = arg
 
     validActions = [
@@ -59,33 +85,55 @@ def main():
         sys.exit(2)
 
     try:
-        host = "127.0.0.1"
-        port = 8129
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         soc.connect((host, port))
-        printLog('Connected to --#%s#-:--#%s#-' % (host, port))
+        printLog('Connected to --#%s#-:--#%s#-' % (host, port), 'success')
 
     except:
-        printLog("Connection error")
+        printLog("Connection error", 'error')
         sys.exit()
 
     try:
         t = Transfer(soc)
         t.send(action)
-        printLog('Sending --#%s#- action' % (action))
+        printLog('Sending --#%s#- action' % (action), 'success')
 
         if 'monitor' in action:
             monitor(t)
 
     except:
-        printLog('Closing --#%s#- action' % (action))
+        printLog('Closing --#%s#- action' % (action), 'success')
 
     finally:
-        t.send('close')
-        soc.close()
-        printLog('Exiting client program', 'success')
-        os._exit(1)
+        shutdown()
 
+
+def shutdown():
+
+    if t:
+        try:
+            t.send('close')
+            status = 'success'
+
+        except:
+            status = 'error'
+
+        finally:
+            printLog('Sending close action to server', status)
+
+    if soc:
+        try:
+            soc.close()
+            status = 'success'
+
+        except:
+            status = 'error'
+
+        finally:
+            printLog('Closing socket connection', status)
+
+    printLog('Exiting client program', 'success')
+    os._exit(1)
 
 
 def monitor(t):
