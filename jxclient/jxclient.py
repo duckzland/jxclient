@@ -20,7 +20,7 @@ def usage():
     print '      server:reboot              Rebooting server instance'
     print '      server:update              Updating server loaded configuration'
     print '   -s Insert the server host ip address, default to 127.0.0.1'
-    print '   -v Insert the server port number, default is 8129'
+    print '   -p Insert the server port number, default is 8129'
     print '   -h Prints this help message'
     print '   -v Prints version'
 
