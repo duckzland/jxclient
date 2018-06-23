@@ -2,7 +2,6 @@
 
 Python script for controlling [ JXMiner ](https://github.com/duckzland/jxminer) via CLI.
 
-![Alt text](docs/jxminer.png?raw=true "JXMiner Screenshot")
 
 ## Requirement
 - JXMiner installed and running
