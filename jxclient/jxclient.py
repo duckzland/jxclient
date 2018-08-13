@@ -14,24 +14,29 @@ def usage():
     print '   -a <action>'
     print '      monitor:miner:cpu          Retrieving CPU miner log entry'
     print '      monitor:miner:gpu:x        Retrieving CPU miner x (0|1) log entry'
+    print '      monitor:server:snapshot    Retrieving Full server logs non continuously'
     print '      monitor:server             Retrieving Full server logs in json format'
     print '      server:status              Checking server status'
     print '      server:shutdown            Shuts down the server'
     print '      server:reboot              Rebooting server instance'
     print '      server:update              Updating server loaded configuration'
+    print '      config:load:json           Retrieving server configuration in json format'
+    print '      config:save:json           Passing json to the server to be saved as config file'
     print '   -s Insert the server host ip address, default to 127.0.0.1'
     print '   -p Insert the server port number, default is 8129'
+    print '   -j The json payload to be passed to the server'
     print '   -h Prints this help message'
     print '   -v Prints version'
 
 def version():
-    print '0.3.1'
+    print '0.3.2'
 
 def main():
     global t
     global soc
 
     action = ''
+    payload = ''
     host = '127.0.0.1'
     port = 8129
     t = None
@@ -44,7 +49,7 @@ def main():
     argv = sys.argv[1:]
 
     try:
-        opts, args = getopt.getopt(argv,"hi:vi:s:p:a:",["--action="])
+        opts, args = getopt.getopt(argv,"hi:vi:j:s:p:a:",["--action="])
 
     except getopt.GetoptError:
         usage()
@@ -60,7 +65,6 @@ def main():
             sys.exit()
 
         if opt == '-s':
-            print arg
             host = str(arg)
 
         if opt == '-p':
@@ -69,15 +73,21 @@ def main():
         if opt in ("-a", "--action"):
             action = arg
 
+        if opt == '-j':
+            payload = arg
+
     validActions = [
         'monitor:miner:cpu',
         'monitor:miner:gpu:0',
         'monitor:miner:gpu:1',
+        'monitor:server:snapshot',
         'monitor:server',
         'server:status',
         'server:shutdown',
         'server:reboot',
-        'server:update'
+        'server:update',
+        'config:load:json',
+        'config:save:json'
     ]
 
     if not action or action not in validActions:
@@ -98,8 +108,11 @@ def main():
         t.send(action)
         printLog('Sending --#%s#- action' % (action), 'success')
 
-        if 'monitor' in action:
+        if 'monitor' in action or 'config:load' in action:
             monitor(t)
+
+        if 'config:save' in action:
+            t.send(payload)
 
     except:
         printLog('Closing --#%s#- action' % (action), 'success')
