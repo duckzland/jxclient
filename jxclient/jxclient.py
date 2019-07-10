@@ -17,6 +17,7 @@ def usage():
     print '      monitor:server:snapshot    Retrieving Full server logs non continuously'
     print '      monitor:server             Retrieving Full server logs in json format'
     print '      server:status              Checking server status'
+    print '      server:status:live         Checking server status continously'
     print '      server:shutdown            Shuts down the server'
     print '      server:reboot              Rebooting server instance'
     print '      server:update              Updating server loaded configuration'
@@ -29,7 +30,7 @@ def usage():
     print '   -v Prints version'
 
 def version():
-    print '0.3.2'
+    print '0.3.3'
 
 def main():
     global t
@@ -83,6 +84,7 @@ def main():
         'monitor:server:snapshot',
         'monitor:server',
         'server:status',
+        'server:status:live',
         'server:shutdown',
         'server:reboot',
         'server:update',
@@ -108,7 +110,7 @@ def main():
         t.send(action)
         printLog('Sending --#%s#- action' % (action), 'success')
 
-        if 'monitor' in action or 'config:load' in action:
+        if 'monitor' in action or 'config:load' in action or 'server:status:live' in action:
             monitor(t)
 
         if 'config:save' in action:

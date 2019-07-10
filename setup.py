@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxclient",
-    version = "0.3.2",
+    version = "0.3.3",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for connecting to JXMiner Server",
